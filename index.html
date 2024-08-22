@@ -3,58 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe</title>
+    <title>Premium Tic-Tac-Toe</title>
     <style>
+        /* Base Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(45deg, #83a4d4, #b6fbff);
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f7f7f7;
-            margin: 0;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
         }
         .container {
             text-align: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .container:hover {
+            transform: translateY(-10px);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+            letter-spacing: 2px;
         }
         .board {
             display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
         .cell {
             width: 100px;
             height: 100px;
+            background: #f9f9f9;
+            border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #ffffff;
-            border: 2px solid #000;
             font-size: 2em;
             cursor: pointer;
-            user-select: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
         .cell:hover {
-            background-color: #e0e0e0;
+            background-color: #efefef;
+            transform: scale(1.1);
+        }
+        .cell.clicked {
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .cell.X {
+            color: #ff5722;
+            animation: fadeInX 0.5s ease forwards;
+        }
+        .cell.O {
+            color: #2196f3;
+            animation: fadeInO 0.5s ease forwards;
+        }
+        @keyframes fadeInX {
+            from { opacity: 0; transform: rotateY(90deg); }
+            to { opacity: 1; transform: rotateY(0); }
+        }
+        @keyframes fadeInO {
+            from { opacity: 0; transform: rotateX(90deg); }
+            to { opacity: 1; transform: rotateX(0); }
         }
         #status {
             font-size: 1.5em;
             margin-bottom: 20px;
+            color: #333;
         }
         #scoreboard {
-            margin-bottom: 20px;
             font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #555;
         }
         #resetButton {
-            padding: 10px 20px;
+            padding: 10px 30px;
             font-size: 1em;
+            background-color: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        #resetButton:hover {
+            background-color: #1976d2;
+            transform: translateY(-5px);
         }
     </style>
 </head>
@@ -110,8 +156,9 @@
 
         board[clickedCellIndex] = currentPlayer;
         clickedCell.textContent = currentPlayer;
+        clickedCell.classList.add('clicked', currentPlayer);
         checkForWinner();
-        
+
         if (gameActive && currentPlayer === 'X') {
             currentPlayer = 'O';
             statusText.textContent = `Robot's turn (O)`;
@@ -122,7 +169,9 @@
     function robotMove() {
         let bestMove = getBestMove();
         board[bestMove] = 'O';
-        cells[bestMove].textContent = 'O';
+        const robotCell = cells[bestMove];
+        robotCell.textContent = 'O';
+        robotCell.classList.add('clicked', 'O');
         checkForWinner();
         if (gameActive) {
             currentPlayer = 'X';
@@ -153,6 +202,11 @@
                 }
                 board[i] = '';
             }
+        }
+
+        // Take the center if available
+        if (board[4] === '') {
+            return 4;
         }
 
         // Otherwise, choose a random available cell
@@ -223,7 +277,10 @@
         gameActive = true;
         board = ['', '', '', '', '', '', '', '', ''];
         statusText.textContent = `Player X's turn`;
-        cells.forEach(cell => cell.textContent = '');
+        cells.forEach(cell => {
+            cell.textContent = '';
+            cell.classList.remove('clicked', 'X', 'O');
+        });
     }
 
     function updateScoreboard() {
