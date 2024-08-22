@@ -103,6 +103,33 @@
         board[clickedCellIndex] = currentPlayer;
         clickedCell.textContent = currentPlayer;
         checkForWinner();
+        
+        if (gameActive && currentPlayer === 'X') {
+            currentPlayer = 'O';
+            statusText.textContent = `Robot's turn (O)`;
+            setTimeout(robotMove, 500); // Add a slight delay for the robot's move
+        }
+    }
+
+    function robotMove() {
+        let availableCells = [];
+        board.forEach((cell, index) => {
+            if (cell === '') {
+                availableCells.push(index);
+            }
+        });
+
+        if (availableCells.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableCells.length);
+            const robotCellIndex = availableCells[randomIndex];
+            board[robotCellIndex] = 'O';
+            cells[robotCellIndex].textContent = 'O';
+            checkForWinner();
+            if (gameActive) {
+                currentPlayer = 'X';
+                statusText.textContent = `Player X's turn`;
+            }
+        }
     }
 
     function checkForWinner() {
@@ -134,8 +161,14 @@
             return;
         }
 
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        statusText.textContent = `Player ${currentPlayer}'s turn`;
+        if (currentPlayer === 'X') {
+            currentPlayer = 'O';
+            statusText.textContent = `Robot's turn (O)`;
+            setTimeout(robotMove, 500); // Add a slight delay for the robot's move
+        } else {
+            currentPlayer = 'X';
+            statusText.textContent = `Player X's turn`;
+        }
     }
 
     function resetGame() {
