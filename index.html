@@ -47,6 +47,10 @@
             font-size: 1.5em;
             margin-bottom: 20px;
         }
+        #scoreboard {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
         #resetButton {
             padding: 10px 20px;
             font-size: 1em;
@@ -59,6 +63,7 @@
 <div class="container">
     <h1>Tic-Tac-Toe</h1>
     <div id="status">Player X's turn</div>
+    <div id="scoreboard">Player X: 0 | Robot (O): 0</div>
     <div class="board">
         <div class="cell" data-index="0"></div>
         <div class="cell" data-index="1"></div>
@@ -76,10 +81,13 @@
 <script>
     const cells = document.querySelectorAll('.cell');
     const statusText = document.getElementById('status');
+    const scoreboardText = document.getElementById('scoreboard');
     const resetButton = document.getElementById('resetButton');
     let currentPlayer = 'X';
     let gameActive = true;
     let board = ['', '', '', '', '', '', '', '', ''];
+    let playerXScore = 0;
+    let robotScore = 0;
 
     const winningConditions = [
         [0, 1, 2],
@@ -112,6 +120,42 @@
     }
 
     function robotMove() {
+        let bestMove = getBestMove();
+        board[bestMove] = 'O';
+        cells[bestMove].textContent = 'O';
+        checkForWinner();
+        if (gameActive) {
+            currentPlayer = 'X';
+            statusText.textContent = `Player X's turn`;
+        }
+    }
+
+    function getBestMove() {
+        // Check if the robot can win in the next move
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === '') {
+                board[i] = 'O';
+                if (checkWinner('O')) {
+                    board[i] = '';
+                    return i;
+                }
+                board[i] = '';
+            }
+        }
+
+        // Check if the player can win in the next move, block them
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === '') {
+                board[i] = 'X';
+                if (checkWinner('X')) {
+                    board[i] = '';
+                    return i;
+                }
+                board[i] = '';
+            }
+        }
+
+        // Otherwise, choose a random available cell
         let availableCells = [];
         board.forEach((cell, index) => {
             if (cell === '') {
@@ -119,17 +163,8 @@
             }
         });
 
-        if (availableCells.length > 0) {
-            const randomIndex = Math.floor(Math.random() * availableCells.length);
-            const robotCellIndex = availableCells[randomIndex];
-            board[robotCellIndex] = 'O';
-            cells[robotCellIndex].textContent = 'O';
-            checkForWinner();
-            if (gameActive) {
-                currentPlayer = 'X';
-                statusText.textContent = `Player X's turn`;
-            }
-        }
+        const randomIndex = Math.floor(Math.random() * availableCells.length);
+        return availableCells[randomIndex];
     }
 
     function checkForWinner() {
@@ -150,6 +185,12 @@
 
         if (roundWon) {
             statusText.textContent = `Player ${currentPlayer} wins!`;
+            if (currentPlayer === 'X') {
+                playerXScore++;
+            } else {
+                robotScore++;
+            }
+            updateScoreboard();
             gameActive = false;
             return;
         }
@@ -171,12 +212,22 @@
         }
     }
 
+    function checkWinner(player) {
+        return winningConditions.some(condition => {
+            return condition.every(index => board[index] === player);
+        });
+    }
+
     function resetGame() {
         currentPlayer = 'X';
         gameActive = true;
         board = ['', '', '', '', '', '', '', '', ''];
         statusText.textContent = `Player X's turn`;
         cells.forEach(cell => cell.textContent = '');
+    }
+
+    function updateScoreboard() {
+        scoreboardText.textContent = `Player X: ${playerXScore} | Robot (O): ${robotScore}`;
     }
 
     cells.forEach(cell => cell.addEventListener('click', handleCellClick));
